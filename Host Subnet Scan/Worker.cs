@@ -21,7 +21,7 @@ namespace Host_Subnet_Scan
                 PowerShellInstance.AddScript("arp -a " + ipAddress);
                 
                 // invoke execution on the pipeline (ignore output)
-                PowerShellInstance.Invoke();
+                
                 // invoke execution on the pipeline (collecting output)
                 Collection<PSObject> PSOutput = PowerShellInstance.Invoke();
 

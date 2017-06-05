@@ -13,6 +13,7 @@ using System.Net;
 
 namespace Host_Subnet_Scan
 {
+
     public partial class Form1 : Form
     {
         Thread myThread = null;
@@ -29,6 +30,8 @@ namespace Host_Subnet_Scan
         }
         private void defaultstate()
         {
+            progressLBL.Visible = false;
+            progressLBL.Text = "";
             ScanButton.Enabled = true;
             ScanButton.Visible = true;
             ResumeButton.Enabled = false;
@@ -40,6 +43,7 @@ namespace Host_Subnet_Scan
         }
         private void runningstate()
         {
+            progressLBL.Visible = true;
             ScanButton.Enabled = false;
             ScanButton.Visible = false;
             ResumeButton.Enabled = false;
@@ -72,15 +76,18 @@ namespace Host_Subnet_Scan
                     break;
                 }
                 progressBar1.Increment(1);
+                progressLBL.Text = i + "/254";
                 if (reply.Status == IPStatus.Success)
                 {
 
                     try
                     {
+                        
                         addr = IPAddress.Parse(subnet + subnetN);
                         host = Dns.GetHostEntry(addr);
                         macAddress = wkr.findMacAddress(addr.ToString());
-                        HostListBox.Items.Add(subnet + subnetN + host.HostName.ToString() + "UP"+macAddress);
+                        this.dataGridView1.Rows.Add(subnet + subnetN, host.HostName, macAddress, "UP");
+                        
 
                     }
                     catch { }
@@ -88,6 +95,8 @@ namespace Host_Subnet_Scan
              
             }
             defaultstate();
+            progressLBL.Visible = true;
+            
         }
         
         private void Form1_Load(object sender, EventArgs e)
@@ -97,16 +106,12 @@ namespace Host_Subnet_Scan
 
         private void ScanButton_Click(object sender, EventArgs e)
         {
-            HostListBox.Items.Clear();
+            dataGridView1.Rows.Clear();
             progressBar1.Value = 0;
             myThread = new Thread(() => scan(SubnetTextBox.Text));
             myThread.IsBackground = true;
             myThread.Start();
-            StopButton.Enabled = true;
-            ScanButton.Enabled = false;
-            ScanButton.Visible = false;
-            ResumeButton.Visible = true;
-            ResumeButton.Enabled = false;
+            runningstate();
         }
 
         private void StopButton_Click(object sender, EventArgs e)
@@ -131,7 +136,7 @@ namespace Host_Subnet_Scan
         {
             myThread.Resume();
             myThread.Abort();
-            HostListBox.Items.Clear();
+            dataGridView1.Rows.Clear();
             progressBar1.Value = 0;
             defaultstate();
         }
@@ -140,6 +145,26 @@ namespace Host_Subnet_Scan
         {
             Worker wkr = new Worker();
             string result = wkr.findMacAddress("192.168.0.8");
+        }
+        struct DataParamater
+        {
+            public List<IPAddress> ProductList;
+            public string Filename { get; set; }
+                
+        }
+        DataParamater _inpupParameter;
+        private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            if (bgWorker.IsBusy)
+                return;
+            using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xls" })
+            {
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    _inpupParameter.Filename = sfd.FileName;
+                    _inpupParameter.ProductList = productBindingSource.Datasource as
+                }
+            }
         }
     }
 }

@@ -8,3 +8,13 @@ c:\users\owner\documents\visual studio 2017\Projects\Host Subnet Scan\Host Subne
 c:\users\owner\documents\visual studio 2017\Projects\Host Subnet Scan\Host Subnet Scan\obj\Debug\Host Subnet Scan.exe
 c:\users\owner\documents\visual studio 2017\Projects\Host Subnet Scan\Host Subnet Scan\obj\Debug\Host Subnet Scan.pdb
 c:\users\owner\documents\visual studio 2017\Projects\Host Subnet Scan\Host Subnet Scan\bin\Debug\System.Management.Automation.dll
+C:\VBS\Subnet Scan\Host Subnet Scan\bin\Debug\Host Subnet Scan.exe.config
+C:\VBS\Subnet Scan\Host Subnet Scan\bin\Debug\Host Subnet Scan.exe
+C:\VBS\Subnet Scan\Host Subnet Scan\bin\Debug\Host Subnet Scan.pdb
+C:\VBS\Subnet Scan\Host Subnet Scan\bin\Debug\System.Management.Automation.dll
+C:\VBS\Subnet Scan\Host Subnet Scan\obj\Debug\Host Subnet Scan.csprojResolveAssemblyReference.cache
+C:\VBS\Subnet Scan\Host Subnet Scan\obj\Debug\Host_Subnet_Scan.Form1.resources
+C:\VBS\Subnet Scan\Host Subnet Scan\obj\Debug\Host_Subnet_Scan.Properties.Resources.resources
+C:\VBS\Subnet Scan\Host Subnet Scan\obj\Debug\Host Subnet Scan.csproj.GenerateResource.Cache
+C:\VBS\Subnet Scan\Host Subnet Scan\obj\Debug\Host Subnet Scan.exe
+C:\VBS\Subnet Scan\Host Subnet Scan\obj\Debug\Host Subnet Scan.pdb
