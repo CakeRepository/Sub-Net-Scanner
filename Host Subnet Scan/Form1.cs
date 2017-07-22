@@ -16,42 +16,38 @@ namespace Host_Subnet_Scan
 
     public partial class Form1 : Form
     {
+        NetworkManagement nm = new NetworkManagement();
         Thread myThread = null;
         Worker wkr = new Worker();
         public Form1()
         {
             InitializeComponent();
-            Control.CheckForIllegalCrossThreadCalls = false;
 
         }
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
         }
-        private void defaultstate()
+        private void defaultstate(bool state)
         {
-            progressLBL.Visible = false;
-            progressLBL.Text = "";
-            ScanButton.Enabled = true;
-            ScanButton.Visible = true;
-            ResumeButton.Enabled = false;
-            ResumeButton.Visible = false;
-            StopButton.Enabled = false;
-            StopButton.Visible = true;
-            ClearButton.Enabled = false;
-            ClearButton.Visible = false;
+            exportButton.Invoke((MethodInvoker)(() => exportButton.Visible = true));
+            exportButton.Invoke((MethodInvoker)(() => exportButton.Enabled = true));
+            progressLBL.Invoke((MethodInvoker)(() => progressLBL.Visible = false));
+            progressLBL.Invoke((MethodInvoker)(() => progressLBL.Text = ""));
+            progressLBL.Invoke((MethodInvoker)(() => progressLBL.Visible = state));
+            ScanButton.Invoke((MethodInvoker)(() => ScanButton.Enabled = true));
+            ScanButton.Invoke((MethodInvoker)(() => ScanButton.Visible = true));
+            StopButton.Invoke((MethodInvoker)(() => StopButton.Enabled = false));
+            StopButton.Invoke((MethodInvoker)(() => StopButton.Visible = false));
+            
         }
         private void runningstate()
         {
-            progressLBL.Visible = true;
-            ScanButton.Enabled = false;
-            ScanButton.Visible = false;
-            ResumeButton.Enabled = false;
-            ResumeButton.Visible = true;
-            StopButton.Enabled = true;
-            StopButton.Visible = true;
-            ClearButton.Enabled = false;
-            ClearButton.Visible = false;
+            progressLBL.Invoke((MethodInvoker)(() => progressLBL.Visible = true));
+            ScanButton.Invoke((MethodInvoker)(() => ScanButton.Enabled = false));
+            ScanButton.Invoke((MethodInvoker)(() => ScanButton.Visible = true));
+            StopButton.Invoke((MethodInvoker)(() => StopButton.Enabled = true));
+            StopButton.Invoke((MethodInvoker)(() => StopButton.Visible = true));
         }
         public void scan(string subnet)
         {
@@ -67,103 +63,154 @@ namespace Host_Subnet_Scan
                 myPing = new Ping();
                 try
                 {
-                    reply = myPing.Send(subnet + subnetN, 900);
+                    reply = myPing.Send(subnet + subnetN, 500);
                 }
                 catch
                 {
-                    
-                    defaultstate();
+                    defaultstate(false);
                     break;
                 }
-                progressBar1.Increment(1);
-                progressLBL.Text = i + "/254";
+                progressBar1.Invoke((MethodInvoker)(() => progressBar1.Increment(1)));
+                progressLBL.Invoke((MethodInvoker)(() => progressLBL.Text = i + "/254"));
+                
+                
                 if (reply.Status == IPStatus.Success)
                 {
-
+                    string hosty;
                     try
                     {
                         
                         addr = IPAddress.Parse(subnet + subnetN);
-                        host = Dns.GetHostEntry(addr);
+                        try
+                        {
+                            host = Dns.GetHostEntry(addr);
+                            hosty = host.HostName;
+                        }
+                        catch
+                        {
+                            hosty = " ";
+                        }
                         macAddress = wkr.findMacAddress(addr.ToString());
-                        this.dataGridView1.Rows.Add(subnet + subnetN, host.HostName, macAddress, "UP");
-                        
+                        this.dataGridView1.Invoke((MethodInvoker)(() => this.dataGridView1.Rows.Add(subnet + subnetN, hosty, macAddress, "UP")));
+                        //this.dataGridView1.Rows.Add(subnet + subnetN, hosty, macAddress, "UP");
+                    }
+                    catch {}
+                }
+                else
+                {
+                    string hosty = " ";
+                    addr = IPAddress.Parse(subnet + subnetN);
+                    macAddress = wkr.findMacAddress(addr.ToString());
+                    Console.WriteLine(macAddress);
+                    if (macAddress == " ")
+                    {
 
                     }
-                    catch { }
+                    else
+                        this.dataGridView1.Invoke((MethodInvoker)(() => this.dataGridView1.Rows.Add(subnet + subnetN, hosty, macAddress, "UNK")));
+
                 }
-             
+
             }
-            defaultstate();
-            progressLBL.Visible = true;
-            
+            defaultstate(true);
         }
-        
         private void Form1_Load(object sender, EventArgs e)
         {
-            defaultstate();
+            defaultstate(false);
+            subnetComboBoxInit();
         }
 
-        private void ScanButton_Click(object sender, EventArgs e)
+        private void subnetComboBoxInit()
         {
+            string ipv4e = nm.GetLocalIPv4(NetworkInterfaceType.Ethernet);
+            int i = nm.FindLast(ipv4e);
+            if (i != 155)
+            {
+                subnetComboBox.Text = ipv4e.Substring(0, i - 1);
+            }
+        }
+
+        private void ScanButton_Click_2(object sender, EventArgs e)
+        {
+            string ipTMP = subnetComboBox.Text;
             dataGridView1.Rows.Clear();
             progressBar1.Value = 0;
-            myThread = new Thread(() => scan(SubnetTextBox.Text));
+            myThread = new Thread(() => scan(ipTMP));
             myThread.IsBackground = true;
             myThread.Start();
             runningstate();
+
         }
 
         private void StopButton_Click(object sender, EventArgs e)
         {
-            myThread.Suspend();
-            ResumeButton.Enabled = true;
-            StopButton.Visible = false;
-            StopButton.Enabled = false;
-            ClearButton.Visible = true;
-            ClearButton.Enabled = true;
-        }
-
-        private void ResumeButton_Click(object sender, EventArgs e)
-        {
-            ScanButton.Visible = true;
-            ScanButton.Enabled = true;
-            myThread.Resume();
-            runningstate();
-        }
-        
-        private void ClearButton_Click(object sender, EventArgs e)
-        {
-            myThread.Resume();
             myThread.Abort();
-            dataGridView1.Rows.Clear();
+            defaultstate(false);
             progressBar1.Value = 0;
-            defaultstate();
+            dataGridView1.Rows.Clear();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void exportButton_Click_1(object sender, EventArgs e)
         {
-            Worker wkr = new Worker();
-            string result = wkr.findMacAddress("192.168.0.8");
-        }
-        struct DataParamater
-        {
-            public List<IPAddress> ProductList;
-            public string Filename { get; set; }
-                
-        }
-        DataParamater _inpupParameter;
-        private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            if (bgWorker.IsBusy)
-                return;
-            using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xls" })
+            /// <summary> 
+            /// Exports the datagridview values to Excel. 
+            /// </summary> 
+
+            // Creating a Excel object. 
+            Microsoft.Office.Interop.Excel._Application excel = new Microsoft.Office.Interop.Excel.Application();
+            Microsoft.Office.Interop.Excel._Workbook workbook = excel.Workbooks.Add(Type.Missing);
+
+            try
             {
-                if (sfd.ShowDialog() == DialogResult.OK)
+
+                Microsoft.Office.Interop.Excel._Worksheet worksheet = workbook.ActiveSheet;
+
+                worksheet.Name = "Host Subnet Scan";
+
+
+
+                int cellRowIndex = 1;
+                int cellColumnIndex = 1;
+                for (var j = 0; j < dataGridView1.Columns.Count; j++)
                 {
-                    _inpupParameter.Filename = sfd.FileName;
-                    _inpupParameter.ProductList = productBindingSource.Datasource as
+
+                    worksheet.Cells[cellRowIndex, cellColumnIndex] = dataGridView1.Columns[j].HeaderText;
+                    cellColumnIndex++;
                 }
+                cellColumnIndex = 1;
+                cellRowIndex++;
+                //Loop through each row and read value from each column. 
+                for (var i = 0; i < dataGridView1.RowCount; i++)
+                {
+                    for (var j = 0; j < dataGridView1.Columns.Count; j++)
+                    {
+                        
+                            worksheet.Cells[cellRowIndex, cellColumnIndex] = dataGridView1.Rows[i].Cells[j].Value.ToString();
+                        
+                        cellColumnIndex++;
+                    }
+                    cellColumnIndex = 1;
+                    cellRowIndex++;
+                }
+
+                //Getting the location and file name of the excel to save from user. 
+                SaveFileDialog saveDialog = new SaveFileDialog();
+                saveDialog.Filter = @"Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
+                saveDialog.FilterIndex = 2;
+
+                if (saveDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+                workbook.SaveAs(saveDialog.FileName);
+                MessageBox.Show(@"Export Successful");
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                excel.Quit();
+                workbook = null;
+                excel = null;
             }
         }
     }
